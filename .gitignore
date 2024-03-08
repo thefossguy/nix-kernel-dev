@@ -1,0 +1,4 @@
+.direnv/*
+code/*
+linux*.tar*
+linux*/
