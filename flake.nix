@@ -17,51 +17,65 @@
         pkgs = import nixpkgs {
           inherit system;
 
-          overlays = [( final: prev: {
-            linux_latest_with_llvm = prev.linux_latest.override {
-              stdenv = llvmPkgs.stdenv;
-            };
-          })];
+          overlays = [
+            (final: prev: {
+              linux_latest_with_llvm = prev.linux_latest.override {
+                stdenv = llvmPkgs.stdenv;
+              };
+            })
+          ];
         };
 
         llvmPkgs = pkgs.llvmPackages;
         # this gets the "major version" of LLVM, eg "16" or "17"
         llvmVersion = builtins.elemAt (builtins.splitVersion llvmPkgs.clang.version) 0;
+
+        commonInputs = with pkgs; [
+          # for a better kernel developer workflow
+          b4
+          neovim
+
+          # rust ofc
+          rustup
+
+          # for "make menuconfig"
+          pkg-config
+          ncurses
+
+          # testing the built kernel in a VM using QEMU
+          debootstrap # fur creating ze rootfs
+          gdb
+          qemu_kvm
+
+          # extra utilities _I_ find useful
+          bat
+          broot
+          choose
+          fd
+          ripgrep
+
+          # formatting this flake
+          nixpkgs-fmt
+        ];
       });
+
+      globalBuildFlags = {
+        # build related flags (for the script)
+        CLEAN_BUILD = 0;
+        INSTALL_ZE_KERNEL = 0;
+        REMOVE_KERNEL = 0;
+      };
     in
     {
-      devShells = forEachSupportedSystem ({ pkgs, llvmPkgs, llvmVersion, ... }: {
-        default = (pkgs.mkShell.override { stdenv = llvmPkgs.stdenv; }) {
-          inputsFrom = with pkgs; [ linux_latest_with_llvm ];
-          packages = with pkgs; [
-            # for a better kernel developer workflow
-            b4
-            neovim
+      devShells = forEachSupportedSystem ({ pkgs, commonInputs, llvmPkgs, llvmVersion, ... }: rec {
+        default = withLLVM;
+        #default = withGNU;
 
-            # rust ofc
-            rustup
-
-            # for "make menuconfig"
-            pkg-config
-            ncurses
-
-            # testing the built kernel in a VM using QEMU
-            debootstrap # fur creating ze rootfs
-            gdb
-            qemu_kvm
-
-            # extra utilities _I_ find useful
-            bat
-            broot
-            choose
-            fd
-            ripgrep
-
-            # formatting this flake
-            nixpkgs-fmt
-          ]
-          # for some reason, `llvmPkgs.stdenv` does not have `lld` or actually `bintools`
-          ++ [ llvmPkgs.bintools ];
+        withLLVM = (pkgs.mkShell.override { stdenv = llvmPkgs.stdenv; }) {
+          inputsFrom = [ pkgs.linux_latest_with_llvm ];
+          packages = commonInputs
+            # for some reason, `llvmPkgs.stdenv` does not have `lld` or actually `bintools`
+            ++ [ llvmPkgs.bintools ];
 
           # Disable '-fno-strict-overflow' compiler flag because it causes the build to fail with the following error:
           # clang-16: error: argument unused during compilation: '-fno-strict-overflow' [-Werror,-Wunused-command-line-argument]
@@ -75,21 +89,28 @@
             LLVM = 1;
             # build related flags (for the script)
             BUILD_WITH_RUST = 0;
-            CLEAN_BUILD = 0;
-            INSTALL_ZE_KERNEL = 0;
-            REMOVE_KERNEL = 0;
 
             # needed by Rust bindgen
             LIBCLANG_PATH = pkgs.lib.makeLibraryPath [ llvmPkgs.libclang.lib ];
             # because `grep gcc "$(nix-store -r $(command -v clang))/nix-support/libcxx-cxxflags"` matches
             # but `grep clang "$(nix-store -r $(command -v clang))/nix-support/libcxx-cxxflags"` **DOES NOT MATCH**
             KCFLAGS = "-isystem ${LIBCLANG_PATH}/clang/${llvmVersion}/include";
-          };
+          } // globalBuildFlags;
 
           # **ONLY UNCOMMENT THIS IF YOU ARE _NOT_ USING HOME-MANAGER AND GET LOCALE ERRORS/WARNINGS**
           # If you are using home-manager, then add the following to your ~/.bashrc
           # `source $HOME/.nix-profile/etc/profile.d/hm-session-vars.sh`
           #LOCALE_ARCHIVE_2_27 = "${pkgs.glibcLocales}/lib/locale/locale-archive";
+        };
+
+        withGNU = pkgs.mkShell {
+          inputsFrom = [ pkgs.linux_latest ];
+          packages = commonInputs;
+
+          env = {
+            # build related flags (for the script)
+            BUILD_WITH_RUST = 0;
+          } // globalBuildFlags;
         };
       });
     };
