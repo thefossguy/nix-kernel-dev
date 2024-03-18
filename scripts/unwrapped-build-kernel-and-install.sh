@@ -64,12 +64,12 @@ function remove_kernel() {
 }
 
 function setup_rust_toolchain() {
-     rustup override set "$(scripts/min-tool-version.sh rustc)"
-     rustup component add rust-src rustfmt clippy
-     cargo install --locked --version "$(scripts/min-tool-version.sh bindgen)" bindgen-cli
+    rustup override set "$(scripts/min-tool-version.sh rustc)"
+    rustup component add rust-src rustfmt clippy
+    cargo install --locked --version "$(scripts/min-tool-version.sh bindgen)" bindgen-cli
 
-     # shellcheck disable=SC2155
-     export RUST_LIB_SRC="$(rustc --print sysroot)/lib/rustlib/src/rust/library"
+    # shellcheck disable=SC2155
+    export RUST_LIB_SRC="$(rustc --print sysroot)/lib/rustlib/src/rust/library"
 }
 function enable_rust_config() {
     if [[ "${BUILD_WITH_RUST}" == '1' ]] && [[ "${LLVM:-0}" == '1' ]]; then
@@ -169,16 +169,16 @@ function install_kernel() {
             echo 'NixOS detected. Not installing kernel. Set FORCE_INSTALL_ZE_KERNEL=1 to override.'
         else
 
-        if find "arch/$kernel_arch/boot/dts" -name "*.dtb" -print -quit > /dev/null; then
-            DTB_INSTALL='dtbs_install'
-        else
-            DTB_INSTALL=''
-        fi
+            if find "arch/$kernel_arch/boot/dts" -name "*.dtb" -print -quit > /dev/null; then
+                DTB_INSTALL='dtbs_install'
+            else
+                DTB_INSTALL=''
+            fi
 
-        sudo cp .config "/boot/config-$(make -s kernelrelease)"
-        # shellcheck disable=SC2086
-        $SUDO_ALIAS make $MAX_PARALLEL_JOBS headers_install $DTB_INSTALL modules_install || remove_kernel
-        $SUDO_ALIAS make install || remove_kernel
+            sudo cp .config "/boot/config-$(make -s kernelrelease)"
+            # shellcheck disable=SC2086
+            $SUDO_ALIAS make $MAX_PARALLEL_JOBS headers_install $DTB_INSTALL modules_install || remove_kernel
+            $SUDO_ALIAS make install || remove_kernel
         fi
     fi
 }
