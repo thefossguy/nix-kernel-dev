@@ -39,17 +39,9 @@ else
 fi
 
 if grep 'debian' /etc/os-release > /dev/null; then
-    if command -v update-grub > /dev/null; then
-        UPDATE_BOOTLOADER='sudo update-grub'
-    else
-        UPDATE_BOOTLOADER='sudo grub-mkconfig -o /boot/grub/grub.cfg'
-    fi
+    UPDATE_BOOTLOADER='sudo grub-mkconfig -o /boot/grub/grub.cfg'
 elif grep 'fedora' /etc/os-release > /dev/null; then
-    if command -v grubby > /dev/null; then
-        UPDATE_BOOTLOADER='sudo grubby --update-kernel=ALL'
-    else
-        UPDATE_BOOTLOADER='sudo grub2-mkconfig -o /boot/grub2/grub.cfg'
-    fi
+    UPDATE_BOOTLOADER='sudo grub2-mkconfig -o /boot/grub2/grub.cfg'
 fi
 
 
