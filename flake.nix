@@ -63,7 +63,6 @@
         # build related flags (for the script)
         CLEAN_BUILD = 0;
         INSTALL_ZE_KERNEL = 1;
-        REMOVE_KERNEL = 0;
       };
     in
     {

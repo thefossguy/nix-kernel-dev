@@ -22,7 +22,7 @@ KERNEL_LOCALVERSION="${KERNEL_LOCALVERSION:-}"
 MAX_PARALLEL_JOBS="-j ${MAX_PARALLEL_JOBS:-$(( $(nproc) + 2 ))}"
 SUDO_ALIAS='sudo --preserve-env=PATH env' # use this alias for su-do-ing binaries provided by Nix
 
-REMOVE_KERNEL="${REMOVE_KERNEL:-0}"
+REMOVE_KERNEL="${REMOVE_KERNEL:-}"
 
 # could be done with the case statement but I don't like the syntax
 # feels _wrong_
@@ -55,7 +55,19 @@ fi
 
 function remove_kernel() {
     kernel_version="${1:-$(make -s kernelrelease)}"
-    sudo rm -rvf {/boot/loader/entries,/boot,/lib/modules,/usr}/"*$kernel_version*"
+    install_dirs=(
+        /boot
+        /lib/modules
+        /usr
+    )
+    sudo find /boot/loader/entries -name "*$kernel_version.conf" -type f -print0 | xargs --null sudo rm -vf
+    for d in "${install_dirs[@]}"; do
+        # shellcheck disable=SC2086
+        sudo rm -rvf "$d"/*$kernel_version*
+    done
+    if command -v kernel-install > /dev/null; then
+        sudo kernel-install remove "$kernel_version"
+    fi
     $UPDATE_BOOTLOADER
 }
 
@@ -178,8 +190,8 @@ function install_kernel() {
     fi
 }
 
-if [[ "${REMOVE_KERNEL}" == '1' ]]; then
-    remove_kernel "${1:-}"
+if [[ -n "${REMOVE_KERNEL}" ]]; then
+    remove_kernel "${REMOVE_KERNEL}"
     exit 0
 fi
 
