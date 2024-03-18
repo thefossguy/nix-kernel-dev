@@ -76,6 +76,7 @@ function setup_rust_toolchain() {
      rustup component add rust-src rustfmt clippy
      cargo install --locked --version "$(scripts/min-tool-version.sh bindgen)" bindgen-cli
 
+     # shellcheck disable=SC2155
      export RUST_LIB_SRC="$(rustc --print sysroot)/lib/rustlib/src/rust/library"
 }
 function enable_rust_config() {
