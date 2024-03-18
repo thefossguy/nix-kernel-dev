@@ -15,7 +15,8 @@ set -xeu -o pipefail
 
 BUILD_WITH_RUST="${BUILD_WITH_RUST:-0}"
 CLEAN_BUILD="${CLEAN_BUILD:-0}"
-INSTALL_ZE_KERNEL="${INSTALL_ZE_KERNEL:-0}"
+INSTALL_ZE_KERNEL="${INSTALL_ZE_KERNEL:-1}"
+FORCE_INSTALL_ZE_KERNEL="${FORCE_INSTALL_ZE_KERNEL:-0}"
 KERNEL_CONFIG="${KERNEL_CONFIG:-}"
 KERNEL_LOCALVERSION="${KERNEL_LOCALVERSION:-}"
 MAX_PARALLEL_JOBS="-j ${MAX_PARALLEL_JOBS:-$(( $(nproc) + 2 ))}"
@@ -159,6 +160,10 @@ function build_kernel() {
 
 function install_kernel() {
     if [[ "${INSTALL_ZE_KERNEL}" == '1' ]]; then
+        if grep nixos /etc/os-release > /dev/null && [[ "${FORCE_INSTALL_ZE_KERNEL}" == '0' ]]; then
+            echo 'NixOS detected. Not installing kernel. Set FORCE_INSTALL_ZE_KERNEL=1 to override.'
+        else
+
         if find "arch/$kernel_arch/boot/dts" -name "*.dtb" -print -quit > /dev/null; then
             DTB_INSTALL='dtbs_install'
         else
@@ -169,6 +174,7 @@ function install_kernel() {
         # shellcheck disable=SC2086
         $SUDO_ALIAS make $MAX_PARALLEL_JOBS headers_install $DTB_INSTALL modules_install || remove_kernel
         $SUDO_ALIAS make install || remove_kernel
+        fi
     fi
 }
 
