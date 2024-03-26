@@ -56,6 +56,7 @@
 
           # formatting this flake
           nixpkgs-fmt
+          yamllint
         ];
       });
 

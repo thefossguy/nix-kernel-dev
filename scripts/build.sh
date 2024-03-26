@@ -1,11 +1,43 @@
 #!/usr/bin/env dash
 
 set -x
+
+
+if [ "$(uname -m)" = 'aarch64' ]; then
+    BUILD_ARCH='arm64'
+elif [ "$(uname -m)" = 'riscv64' ]; then
+    BUILD_ARCH='riscv'
+elif [ "$(uname -m)" = 'x86_64' ]; then
+    BUILD_ARCH='x86'
+else
+    echo 'ERROR: unsupported architecture.'
+    exit 1
+fi
+
+CLEAN_BUILD="${CLEAN_BUILD:-0}"
+KERNEL_CONFIG="${KERNEL_CONFIG:-}"
 KERNEL_LOCALVERSION="-$(date +%Y.%m.%d.%H%M)"
-export KERNEL_LOCALVERSION
+BUILD_WITH_RUST="${BUILD_WITH_RUST:-0}"
+INSTALL_ZE_KERNEL="${INSTALL_ZE_KERNEL:-1}"
+FORCE_INSTALL_ZE_KERNEL="${FORCE_INSTALL_ZE_KERNEL:-0}"
+MAX_PARALLEL_JOBS="-j ${MAX_PARALLEL_JOBS:-$(( $(nproc) + 2 ))}"
+SUDO_ALIAS='sudo --preserve-env=PATH env' # use this alias for su-do-ing binaries provided by Nix
+REMOVE_KERNEL="${REMOVE_KERNEL:-}"
+
+export BUILD_ARCH CLEAN_BUILD KERNEL_CONFIG KERNEL_LOCALVERSION BUILD_WITH_RUST INSTALL_ZE_KERNEL FORCE_INSTALL_ZE_KERNEL MAX_PARALLEL_JOBS SUDO_ALIAS REMOVE_KERNEL
+
+if grep 'fedora' /etc/os-release > /dev/null; then
+    prefix='fedora'
+elif grep 'debian' /etc/os-release > /dev/null; then
+    prefix='debian'
+else
+    prefix='raw'
+fi
+ze_script="$(dirname "$0")/$prefix-build-kernel-and-install.sh"
+
 
 if [ -z "${REMOVE_KERNEL}" ]; then
-    "$(dirname "$0")/unwrapped-build-kernel-and-install.sh" 2>&1 | tee "build-$(make -s kernelversion)${KERNEL_LOCALVERSION}.log"
+    $ze_script 2>&1 | tee "build-$(make -s kernelversion)${KERNEL_LOCALVERSION}.log"
 else
-    "$(dirname "$0")/unwrapped-build-kernel-and-install.sh"
+    $ze_script
 fi
