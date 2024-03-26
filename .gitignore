@@ -1,4 +1,4 @@
-!code/.empty
 .direnv/*
+code/*
 linux*.tar*
 linux*/
