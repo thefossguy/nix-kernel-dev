@@ -33,10 +33,9 @@
         commonInputs = with pkgs; [
           # for a better kernel developer workflow
           b4
+          dt-schema
           neovim
-
-          # rust ofc
-          rustup
+          yamllint
 
           # for "make menuconfig"
           pkg-config
@@ -56,7 +55,6 @@
 
           # formatting this flake
           nixpkgs-fmt
-          yamllint
         ];
       });
 
@@ -74,6 +72,7 @@
         withLLVM = (pkgs.mkShell.override { stdenv = llvmPkgs.stdenv; }) {
           inputsFrom = [ pkgs.linux_latest_with_llvm ];
           packages = commonInputs
+            ++ [ pkgs.rustup ]
             # for some reason, `llvmPkgs.stdenv` does not have `lld` or actually `bintools`
             ++ [ llvmPkgs.bintools ];
 
