@@ -39,5 +39,5 @@ ze_script="$(dirname "$0")/$prefix-build-kernel-and-install.sh"
 if [ -z "${REMOVE_KERNEL}" ]; then
     $ze_script 2>&1 | tee "build-$(make -s kernelversion)${KERNEL_LOCALVERSION}.log"
 else
-    $ze_script
+    $ze_script "$1"
 fi
