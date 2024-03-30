@@ -62,6 +62,6 @@ if [[ -z "${KERNEL_LOCALVERSION}" ]]; then
     exit 1
 fi
 
-configure_kernel
+"$(dirname "$0")/configure-kernel.sh"
 build_kernel
 install_kernel
