@@ -51,17 +51,10 @@ function install_kernel() {
     fi
 }
 
-if [[ -n "${REMOVE_KERNEL}" ]]; then
-    remove_kernel "${REMOVE_KERNEL}"
-    exit 0
+if [[ -z "${1:-}" ]]; then
+    "$(dirname "$0")/configure-kernel.sh"
+    build_kernel
+    install_kernel
+else
+    remove_kernel "$1"
 fi
-
-if [[ -z "${KERNEL_LOCALVERSION}" ]]; then
-    # shellcheck disable=SC2016
-    echo 'ERROR: cannot proceed without a $KERNEL_LOCALVERSION'
-    exit 1
-fi
-
-"$(dirname "$0")/configure-kernel.sh"
-build_kernel
-install_kernel
