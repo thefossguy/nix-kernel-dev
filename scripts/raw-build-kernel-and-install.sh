@@ -36,7 +36,7 @@ function install_kernel() {
             if [[ -n "${KERNEL_INSTALL_COMMAND:-}" ]]; then
                 $KERNEL_INSTALL_COMMAND
             else
-                if find "arch/$kernel_arch/boot/dts" -name "*.dtb" -print -quit > /dev/null; then
+                if find "arch/$BUILD_ARCH/boot/dts" -name "*.dtb" -print -quit > /dev/null; then
                     DTB_INSTALL='dtbs_install'
                 else
                     DTB_INSTALL=''
