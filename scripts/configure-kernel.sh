@@ -33,31 +33,44 @@ function modify_kernel_config() {
     # start with a "useful" base config
     make olddefconfig
 
-    # built-in kernel config
+    # built-in kernel config+headers
     ./scripts/config --enable CONFIG_IKCONFIG
     ./scripts/config --enable CONFIG_IKCONFIG_PROC
-    # built-in kernel headers
     ./scripts/config --enable CONFIG_IKHEADERS
 
     # "de-branding" and "re-branding"
+    ./scripts/config --disable CONFIG_LOCALVERSION_AUTO
     ./scripts/config --set-str CONFIG_BUILD_SALT ''
     ./scripts/config --set-str CONFIG_LOCALVERSION "${KERNEL_LOCALVERSION}"
-    ./scripts/config --disable CONFIG_LOCALVERSION_AUTO
 
     # no need to have these keys, not a prod kernel
-    ./scripts/config --set-str CONFIG_SYSTEM_TRUSTED_KEYS ''
     ./scripts/config --set-str CONFIG_SYSTEM_REVOCATION_KEYS ''
+    ./scripts/config --set-str CONFIG_SYSTEM_TRUSTED_KEYS ''
 
     # disable AEGIS-128 (ARM{,64} NEON})
     # https://github.com/NixOS/nixpkgs/issues/74744
     # plus, this kernel won't run in "prod", so this isn't even a "nice to have"
     ./scripts/config --disable CONFIG_CRYPTO_AEGIS128_SIMD
 
+    # debug options
+    ./scripts/config --enable CONFIG_DEBUG
+    ./scripts/config --enable CONFIG_DEBUG_DRIVER
+    ./scripts/config --enable CONFIG_DEBUG_INFO
+    ./scripts/config --enable CONFIG_GDB_SCRIPTS
+    ./scripts/config --enable CONFIG_KASAN
+    ./scripts/config --enable CONFIG_KMSAN
+    ./scripts/config --enable CONFIG_LOCKDEP
+    ./scripts/config --enable CONFIG_LOCKUP_DETECTOR
+    ./scripts/config --enable CONFIG_PROVE_LOCKING
+    ./scripts/config --enable CONFIG_UBSAN
+
     # sched_ext
-    ./scripts/config --disable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT
-    ./scripts/config --enable CONFIG_DEBUG_INFO_DWARF5
-    ./scripts/config --enable CONFIG_PAHOLE_HAS_BTF_TAG
-    ./scripts/config --enable CONFIG_SCHED_CLASS_EXT
+    if [[ -n "${COMPILING_SCHED_EXT:-}" ]]; then
+        ./scripts/config --disable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT
+        ./scripts/config --enable CONFIG_DEBUG_INFO_DWARF5
+        ./scripts/config --enable CONFIG_PAHOLE_HAS_BTF_TAG
+        ./scripts/config --enable CONFIG_SCHED_CLASS_EXT
+    fi
 
     # enable Rust, conditionally
     enable_rust_config
