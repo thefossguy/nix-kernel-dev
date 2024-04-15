@@ -22,7 +22,6 @@ function remove_kernel() {
 
 
 function build_kernel() {
-    ${PRE_BUILD_SETUP:-}
     make "${MAX_PARALLEL_JOBS}" all
 }
 
@@ -48,6 +47,7 @@ function install_kernel() {
         fi
     fi
 }
+
 
 if [[ -z "${1:-}" ]]; then
     "$(dirname "$0")/configure-kernel.sh"
