@@ -23,7 +23,7 @@ function remove_kernel() {
 
 function build_kernel() {
     ${PRE_BUILD_SETUP:-}
-    make "${MAX_PARALLEL_JOBS}" ${KERNEL_MAKE_TARGET:-all}
+    make "${MAX_PARALLEL_JOBS}" all
 }
 
 function install_kernel() {
