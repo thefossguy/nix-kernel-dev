@@ -44,6 +44,9 @@ function modify_kernel_config() {
     ./scripts/config --set-str CONFIG_LOCALVERSION "${KERNEL_LOCALVERSION}"
 
     # no need to have these keys, not a prod kernel
+    ./scripts/config --disable CONFIG_MODULE_SIG
+    ./scripts/config --disable CONFIG_MODULE_SIG_ALL
+    ./scripts/config --set-str CONFIG_MODULE_SIG_KEY ''
     ./scripts/config --set-str CONFIG_MODULE_SIG_KEY ''
     ./scripts/config --set-str CONFIG_SYSTEM_REVOCATION_KEYS ''
     ./scripts/config --set-str CONFIG_SYSTEM_TRUSTED_KEYS ''
