@@ -20,7 +20,7 @@ KERNEL_LOCALVERSION="-$(date +%Y.%m.%d.%H%M)"
 BUILD_WITH_RUST="${BUILD_WITH_RUST:-0}"
 INSTALL_ZE_KERNEL="${INSTALL_ZE_KERNEL:-1}"
 FORCE_INSTALL_ZE_KERNEL="${FORCE_INSTALL_ZE_KERNEL:-0}"
-MAX_PARALLEL_JOBS="-j ${MAX_PARALLEL_JOBS:-$(( $(nproc) + 2 ))}"
+MAX_PARALLEL_JOBS="-j${MAX_PARALLEL_JOBS:-$(( $(nproc) + 2 ))}"
 SUDO_ALIAS='sudo --preserve-env=PATH env' # use this alias for su-do-ing binaries provided by Nix
 REMOVE_KERNEL="${REMOVE_KERNEL:-}"
 

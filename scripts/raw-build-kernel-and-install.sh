@@ -23,8 +23,7 @@ function remove_kernel() {
 
 function build_kernel() {
     ${PRE_BUILD_SETUP:-}
-    # shellcheck disable=SC2086
-    make $MAX_PARALLEL_JOBS ${KERNEL_MAKE_TARGET:-all}
+    make "${MAX_PARALLEL_JOBS}" ${KERNEL_MAKE_TARGET:-all}
 }
 
 function install_kernel() {
@@ -43,8 +42,7 @@ function install_kernel() {
                 fi
 
                 sudo cp .config "/boot/config-$(make -s kernelrelease)"
-                # shellcheck disable=SC2086
-                $SUDO_ALIAS make $MAX_PARALLEL_JOBS headers_install $DTB_INSTALL modules_install || remove_kernel
+                $SUDO_ALIAS make "${MAX_PARALLEL_JOBS}" headers_install $DTB_INSTALL modules_install || remove_kernel
                 $SUDO_ALIAS make install || remove_kernel
             fi
         fi
