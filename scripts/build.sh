@@ -26,7 +26,7 @@ REMOVE_KERNEL="${REMOVE_KERNEL:-}"
 
 export BUILD_ARCH CLEAN_BUILD KERNEL_CONFIG KERNEL_LOCALVERSION BUILD_WITH_RUST INSTALL_ZE_KERNEL FORCE_INSTALL_ZE_KERNEL MAX_PARALLEL_JOBS SUDO_ALIAS REMOVE_KERNEL
 
-if grep 'debian' /etc/os-release > /dev/null; then
+if grep -q 'debian' /etc/os-release; then
     prefix='debian'
 else
     prefix='raw'

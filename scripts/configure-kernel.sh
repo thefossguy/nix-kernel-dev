@@ -18,7 +18,7 @@ function enable_rust_config() {
         make rustavailable
         make rust.config
 
-        if ! grep 'CONFIG_RUST=y' .config > /dev/null; then
+        if ! grep -q 'CONFIG_RUST=y' .config; then
             echo 'ERROR: building with Rust does not seem to be possible'
             exit 4
         fi

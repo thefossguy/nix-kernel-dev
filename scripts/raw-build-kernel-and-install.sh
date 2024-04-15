@@ -29,7 +29,7 @@ function build_kernel() {
 
 function install_kernel() {
     if [[ "${INSTALL_ZE_KERNEL}" == '1' ]]; then
-        if grep nixos /etc/os-release > /dev/null && [[ "${FORCE_INSTALL_ZE_KERNEL}" == '0' ]]; then
+        if grep -q nixos /etc/os-release && [[ "${FORCE_INSTALL_ZE_KERNEL}" == '0' ]]; then
             echo 'NixOS detected. Not installing kernel. Set FORCE_INSTALL_ZE_KERNEL=1 to override.'
         else
 

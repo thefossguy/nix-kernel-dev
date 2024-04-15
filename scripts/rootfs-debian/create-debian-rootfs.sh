@@ -14,12 +14,12 @@ function errr() {
     # 2. rmdir bootstrap_dir
     # 3. detach from loopback
     # 4. rm image
-    if mount | grep "${BOOTSTRAP_DIR}" > /dev/null; then
+    if mount | grep -q "${BOOTSTRAP_DIR}"; then
         sudo umount -R "${BOOTSTRAP_DIR}"
     fi
     rmdir "${BOOTSTRAP_DIR}"
 
-    if losetup --list --all | grep "${LOOP_DEV}" > /dev/null; then
+    if losetup --list --all | grep -q "${LOOP_DEV}"; then
         sudo losetup -d "${LOOP_DEV}"
     fi
     rm "${IMAGE_NAME}"
