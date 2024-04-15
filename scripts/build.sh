@@ -28,6 +28,8 @@ export BUILD_ARCH CLEAN_BUILD KERNEL_CONFIG KERNEL_LOCALVERSION BUILD_WITH_RUST 
 
 if grep -q 'debian' /etc/os-release; then
     prefix='debian'
+elif grep -q 'fedora' /etc/os-release; then
+    prefix='fedora'
 else
     prefix='raw'
 fi
