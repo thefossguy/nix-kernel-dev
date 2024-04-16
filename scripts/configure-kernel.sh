@@ -18,7 +18,7 @@ function enable_rust_config() {
         make rustavailable
         make rust.config
 
-        if ! grep -q 'CONFIG_RUST=y' .config; then
+        if ! grep -q 'CONFIG_RUST=y' .config && ! grep -q 'CONFIG_RUST_OVERFLOW_CHECKS=y' .config; then
             echo 'ERROR: building with Rust does not seem to be possible'
             exit 4
         fi
