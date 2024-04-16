@@ -67,8 +67,8 @@
     in
     {
       devShells = forEachSupportedSystem ({ pkgs, commonInputs, llvmPkgs, llvmVersion, ... }: rec {
-        default = withGNU;
-        #default = withLLVM;
+        default = withLLVM;
+        #default = withGNU;
 
         withLLVM = (pkgs.mkShell.override { stdenv = llvmPkgs.stdenv; }) {
           inputsFrom = [ pkgs.linux_latest_with_llvm ];
