@@ -14,7 +14,6 @@ function build_kernel() {
 
 function install_kernel() {
     if [[ "${INSTALL_ZE_KERNEL}" == '1' ]]; then
-        echo 'WIP'
         sudo rpm -i "rpmbuild/RPMS/$(uname -m)"/*."$(uname -m).rpm"
     fi
 }
