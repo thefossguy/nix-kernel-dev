@@ -8,8 +8,6 @@ function build_kernel() {
         sed -i 's/BuildRequires.*//g' scripts/package/kernel.spec
     grep -q '\--define='\''_smp_mflags %{nil}'\'' \\' scripts/Makefile.package && \
         sed -i 's@--define='\''_smp_mflags %{nil}'\'' \\@--define='\''_smp_mflags %{nil}'\'' --define='\''with_devel 1'\'' \\@g' scripts/Makefile.package
-    grep -q '_smp_mflags %{nil}' scripts/Makefile.package && \
-        sed -i "s/_smp_mflags %{nil}/_smp_mflags ${MAX_PARALLEL_JOBS}/g" scripts/Makefile.package
 
     time make "${MAX_PARALLEL_JOBS}" binrpm-pkg
 }
