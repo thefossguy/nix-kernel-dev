@@ -54,7 +54,7 @@
           ripgrep
 
           # formatting this flake
-          nixpkgs-fmt
+          nixfmt
         ];
       });
 
