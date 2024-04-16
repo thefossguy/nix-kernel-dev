@@ -5,7 +5,7 @@ set -xeu -o pipefail
 
 function build_kernel() {
     grep -q 'BuildRequires' scripts/package/kernel.spec && \
-        sed -i 's/BuildRequires.*//g' scripts/package/kernel.spec
+        sed -i '/BuildRequires.*/d' scripts/package/kernel.spec
     grep -q '\--define='\''_smp_mflags %{nil}'\'' \\' scripts/Makefile.package && \
         sed -i 's@--define='\''_smp_mflags %{nil}'\'' \\@--define='\''_smp_mflags %{nil}'\'' --define='\''with_devel 1'\'' \\@g' scripts/Makefile.package
 
