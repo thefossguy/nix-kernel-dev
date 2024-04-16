@@ -88,7 +88,7 @@
             # because, for some reason, setting `LLVM` to '0' still counts... :/
             LLVM = 1;
             # build related flags (for the script)
-            BUILD_WITH_RUST = 0;
+            BUILD_WITH_RUST = 1;
 
             # needed by Rust bindgen
             LIBCLANG_PATH = pkgs.lib.makeLibraryPath [ llvmPkgs.libclang.lib ];
