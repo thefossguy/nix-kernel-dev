@@ -85,6 +85,7 @@ function modify_kernel_config() {
 function configure_kernel() {
     if [[ "${CLEAN_BUILD}" == '1' ]]; then
         rm -vf .config*
+        [[ -d .git ]] && git clean -x -d -f
         $SUDO_ALIAS make distclean
     fi
 
