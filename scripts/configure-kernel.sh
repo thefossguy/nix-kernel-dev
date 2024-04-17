@@ -59,12 +59,18 @@ function modify_kernel_config() {
     ./scripts/config --enable CONFIG_DEBUG
     ./scripts/config --enable CONFIG_DEBUG_DRIVER
     ./scripts/config --enable CONFIG_DEBUG_INFO
+    ./scripts/config --enable CONFIG_FRAME_POINTER
     ./scripts/config --enable CONFIG_GDB_SCRIPTS
+    ./scripts/config --enable CONFIG_KALLSYMS
     ./scripts/config --enable CONFIG_KASAN
+    ./scripts/config --enable CONFIG_KGDB
+    ./scripts/config --enable CONFIG_KGDB_KDB
+    ./scripts/config --enable CONFIG_KGDB_SERIAL_CONSOLE
     ./scripts/config --enable CONFIG_KMSAN
     ./scripts/config --enable CONFIG_LOCKDEP
     ./scripts/config --enable CONFIG_LOCKUP_DETECTOR
     ./scripts/config --enable CONFIG_PROVE_LOCKING
+    ./scripts/config --enable CONFIG_STRICT_KERNEL_RWS
     ./scripts/config --enable CONFIG_UBSAN
 
     # sched_ext
