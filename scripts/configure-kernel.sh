@@ -3,7 +3,13 @@
 set -xeu -o pipefail
 
 function setup_rust_toolchain() {
-    rustup override set "$(scripts/min-tool-version.sh rustc)"
+    RUSTUP_OVERRIDE_DIR_PATH="$(dirname "$(dirname "$PWD")")"
+    if [[ "${RUSTUP_OVERRIDE_DIR_PATH}" == *'/nix-kernel-dev' || "${RUSTUP_OVERRIDE_DIR_PATH}" == *'/freax' ]]; then
+        RUSTUP_OVERRIDE_SUFFIX="--path ${RUSTUP_OVERRIDE_DIR_PATH}"
+    fi
+
+    # shellcheck disable=SC2086
+    rustup override set "$(scripts/min-tool-version.sh rustc)" ${RUSTUP_OVERRIDE_SUFFIX}
     rustup component add rust-src rustfmt clippy
     cargo install --locked --version "$(scripts/min-tool-version.sh bindgen)" bindgen-cli
 
