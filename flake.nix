@@ -62,7 +62,6 @@
         # build related flags (for the script)
         CLEAN_BUILD = 0;
         INSTALL_ZE_KERNEL = 1;
-        KBUILD_RPM_WITH_DEVEL = 1;
       };
     in
     {
