@@ -38,8 +38,9 @@ function modify_kernel_config() {
     ./scripts/config --enable CONFIG_IKCONFIG_PROC
     ./scripts/config --enable CONFIG_IKHEADERS
 
-    # defconfig does not enable XFS
+    # defconfig does not enable these
     ./scripts/config --enable CONFIG_XFS_FS
+    ./scripts/config --enable CONFIG_ZRAM
 
     # "de-branding" and "re-branding"
     ./scripts/config --disable CONFIG_LOCALVERSION_AUTO
