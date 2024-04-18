@@ -24,5 +24,5 @@ if [[ -z "${1:-}" ]]; then
     build_kernel
     install_kernel
 else
-    sudo dnf autoremove $(rpm -qa | grep '^kernel' | grep "$1")
+    sudo dnf remove $(rpm -qa | grep '^kernel' | grep "$1")
 fi
