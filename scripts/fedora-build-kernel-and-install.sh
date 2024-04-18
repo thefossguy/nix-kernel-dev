@@ -14,7 +14,7 @@ function build_kernel() {
 
 function install_kernel() {
     if [[ "${INSTALL_ZE_KERNEL}" == '1' ]]; then
-        sudo rpm -i "rpmbuild/RPMS/$(uname -m)"/*."$(uname -m).rpm"
+        sudo dnf localinstall --assumeyes "rpmbuild/RPMS/$(uname -m)"/*."$(uname -m).rpm"
     fi
 }
 
@@ -24,5 +24,5 @@ if [[ -z "${1:-}" ]]; then
     build_kernel
     install_kernel
 else
-    rpm -qa | grep '^kernel' | grep "$1" | xargs sudo dnf autoremove --assumeyes
+    sudo dnf autoremove $(rpm -qa | grep '^kernel' | grep "$1")
 fi
