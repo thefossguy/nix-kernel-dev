@@ -25,5 +25,5 @@ if [[ -z "${1:-}" ]]; then
     install_kernel
 else
     # shellcheck disable=SC2046
-    sudo dnf remove $(rpm -qa | grep '^kernel' | grep "$1")
+    sudo dnf remove --assumeyes $(rpm -qa | grep '^kernel' | grep "$1")
 fi
