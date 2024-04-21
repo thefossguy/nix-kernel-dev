@@ -9,7 +9,8 @@ function build_kernel() {
     grep -q '_smp_mflags %{nil}' scripts/Makefile.package && \
         sed -i "s/_smp_mflags %{nil}/_smp_mflags ${MAX_PARALLEL_JOBS}/g" scripts/Makefile.package
 
-    time make binrpm-pkg
+    # shellcheck disable=SC2086
+    time make binrpm-pkg ${KBUILD_RPROMPTS}
 }
 
 function install_kernel() {
