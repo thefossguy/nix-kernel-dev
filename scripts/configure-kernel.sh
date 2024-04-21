@@ -24,6 +24,10 @@ function enable_rust_config() {
         make rustavailable
         make rust.config
 
+        ./scripts/config --enable CONFIG_RUST
+        ./scripts/config --enable CONFIG_RUST_OVERFLOW_CHECKS
+        ./scripts/config --enable CONFIG_RUST_BUILD_ASSERT_ALLOW
+
         if ! grep -q 'CONFIG_RUST=y' .config && ! grep -q 'CONFIG_RUST_OVERFLOW_CHECKS=y' .config; then
             echo 'ERROR: building with Rust does not seem to be possible'
             exit 4
@@ -45,8 +49,8 @@ function modify_kernel_config() {
     ./scripts/config --enable CONFIG_IKHEADERS
 
     # defconfig does not enable these
-    ./scripts/config --enable CONFIG_XFS_FS
-    ./scripts/config --enable CONFIG_ZRAM
+    ./scripts/config --module CONFIG_XFS_FS
+    ./scripts/config --module CONFIG_ZRAM
 
     # "de-branding" and "re-branding"
     ./scripts/config --disable CONFIG_LOCALVERSION_AUTO
@@ -66,9 +70,17 @@ function modify_kernel_config() {
     ./scripts/config --disable CONFIG_CRYPTO_AEGIS128_SIMD
 
     # debug options
+    ./scripts/config --enable CONFIG_ARCH_WANT_FRAME_POINTERS
     ./scripts/config --enable CONFIG_DEBUG
+    ./scripts/config --enable CONFIG_DEBUG_BUGVERBOSE
     ./scripts/config --enable CONFIG_DEBUG_DRIVER
+    ./scripts/config --enable CONFIG_DEBUG_FS
+    ./scripts/config --enable CONFIG_DEBUG_FS_ALLOW_ALL
     ./scripts/config --enable CONFIG_DEBUG_INFO
+    ./scripts/config --enable CONFIG_DEBUG_KERNEL
+    ./scripts/config --enable CONFIG_DEBUG_MISC
+    ./scripts/config --enable CONFIG_DYNAMIC_DEBUG
+    ./scripts/config --enable CONFIG_DYNAMIC_DEBUG_CORE
     ./scripts/config --enable CONFIG_FRAME_POINTER
     ./scripts/config --enable CONFIG_GDB_SCRIPTS
     ./scripts/config --enable CONFIG_KALLSYMS
@@ -77,9 +89,13 @@ function modify_kernel_config() {
     ./scripts/config --enable CONFIG_KGDB_KDB
     ./scripts/config --enable CONFIG_KGDB_SERIAL_CONSOLE
     ./scripts/config --enable CONFIG_KMSAN
+    ./scripts/config --enable CONFIG_LOCK_TORTURE_TEST
     ./scripts/config --enable CONFIG_LOCKDEP
     ./scripts/config --enable CONFIG_LOCKUP_DETECTOR
+    ./scripts/config --enable CONFIG_PRINTK_CALLER
+    ./scripts/config --enable CONFIG_PRINTK_TIME
     ./scripts/config --enable CONFIG_PROVE_LOCKING
+    ./scripts/config --enable CONFIG_STACK_VALIDATION
     ./scripts/config --enable CONFIG_STRICT_KERNEL_RWS
     ./scripts/config --enable CONFIG_UBSAN
 
