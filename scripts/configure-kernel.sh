@@ -2,6 +2,53 @@
 
 set -xeu -o pipefail
 
+function kconfigure() {
+    set +x
+    OPERATIONS=( "$@" )
+
+    for current_operation in "${OPERATIONS[@]}"; do
+        operation="$(echo "${current_operation}" | awk -F' ' '{print $1}')"
+        config_option="$(echo "${current_operation}" | awk -F' ' '{print $2}')"
+
+        if [[ "${operation}" == '--set-str' ]]; then
+            optional_str="$(echo "${current_operation}" | awk -F' ' '{print $3}')"
+            ./scripts/config --set-str "${config_option}" "${optional_str:-}"
+        else
+            ./scripts/config "${operation}" "${config_option}"
+        fi
+    done
+    make olddefconfig
+
+    wrongly_configured_options=0
+    for current_operation in "${OPERATIONS[@]}"; do
+        operation="$(echo "${current_operation}" | awk -F' ' '{print $1}')"
+        config_option="$(echo "${current_operation}" | awk -F' ' '{print $2}')"
+
+        if [[ "${operation}" == '--disable' ]]; then
+            str_to_check="# ${config_option} is not set"
+        elif [[ "${operation}" == '--enable' ]]; then
+            str_to_check="${config_option}=y"
+        elif [[ "${operation}" == '--module' ]]; then
+            str_to_check="${config_option}=m"
+        elif [[ "${operation}" == '--set-str' ]]; then
+            optional_str="$(echo "${current_operation}" | awk -F' ' '{print $3}')"
+            str_to_check="${config_option}=\"${optional_str:-}\""
+        fi
+
+        if ! grep -q "${config_option}" .config; then
+            wrongly_configured_options=1
+            echo "WARN: missing option '${config_option}'; expected '${str_to_check}'"
+        elif ! grep -q "${str_to_check}" .config; then
+            wrongly_configured_options=1
+            actual_configured_option="$(grep "${config_option}=\|${config_option} " .config)"
+            echo "ERROR: misconfigured option '${config_option}'; expected '${str_to_check}'; found '${actual_configured_option}'"
+        fi
+    done
+    if [[ "${wrongly_configured_options}" == '1' ]]; then
+        exit 1
+    fi
+}
+
 function setup_rust_toolchain() {
     RUSTUP_OVERRIDE_DIR_PATH="$(dirname "$(dirname "$PWD")")"
     if [[ "${RUSTUP_OVERRIDE_DIR_PATH}" == *'/nix-kernel-dev' || "${RUSTUP_OVERRIDE_DIR_PATH}" == *'/freax' ]]; then
