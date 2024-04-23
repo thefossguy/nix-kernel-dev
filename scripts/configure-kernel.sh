@@ -157,7 +157,6 @@ function modify_kernel_config() {
         '--enable CONFIG_KGDB'
         '--enable CONFIG_KGDB_KDB'
         '--enable CONFIG_KGDB_SERIAL_CONSOLE'
-        '--enable CONFIG_KASAN'
         '--enable CONFIG_LOCK_TORTURE_TEST'
         '--enable CONFIG_LOCKDEP'
         '--enable CONFIG_LOCKUP_DETECTOR'
