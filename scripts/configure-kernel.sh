@@ -112,6 +112,15 @@ function modify_kernel_config() {
         '--disable CONFIG_CRYPTO_AEGIS128_SIMD'
     )
 
+    if grep -q 'fedora' /etc/os-release; then
+        SELINUX_CONFIG=(
+            '--enable CONFIG_SECURITY_SELINUX'
+            '--enable CONFIG_DEFAULT_SECURITY_SELINUX'
+        )
+    else
+            SELINUX_CONFIG=()
+    fi
+
     if [[ "${BUILD_WITH_RUST:-0}" == '1' ]] && [[ "${LLVM:-0}" == '1' ]]; then
         setup_rust_toolchain
         make rustavailable
@@ -177,6 +186,7 @@ function modify_kernel_config() {
         "${DEFCONFIG_ADD_ONS[@]}"
         "${SIGNING_REMOVAL[@]}"
         "${ARM_SIMD_DISABLE[@]}"
+        "${SELINUX_CONFIG[@]}"
         "${RUST_CONFIG[@]}"
         "${SCHED_EXT_CONFIG[@]}"
         "${DEBUG_CONFIG[@]}"
