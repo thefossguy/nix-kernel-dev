@@ -67,40 +67,38 @@ function setup_rust_toolchain() {
 function modify_kernel_config() {
     # start with a "useful" base config
     make olddefconfig
-    CUSTOM_CONFIG=()
 
     # built-in kernel config+headers
-    CUSTOM_CONFIG+=(
+    IK_CONFIG=(
         '--enable CONFIG_IKCONFIG'
         '--enable CONFIG_IKCONFIG_PROC'
         '--enable CONFIG_IKHEADERS'
     )
 
     # defconfig does not enable these
-    CUSTOM_CONFIG+=(
+    DEFCONFIG_ADD_ONS=(
         '--module CONFIG_XFS_FS'
         '--module CONFIG_ZRAM'
     )
 
     # "de-branding" and "re-branding"
-    CUSTOM_CONFIG+=(
+    DEBRAND_CONFIG=(
         '--disable CONFIG_LOCALVERSION_AUTO'
         '--set-str CONFIG_BUILD_SALT'
         "--set-str CONFIG_LOCALVERSION ${KERNEL_LOCALVERSION}"
     )
 
     # no need to have these keys, not a prod kernel
-    CUSTOM_CONFIG+=(
+    SIGNING_REMOVAL=(
         '--disable CONFIG_SYSTEM_REVOCATION_LIST'
         '--set-str CONFIG_SYSTEM_TRUSTED_KEYS'
     )
-
     if grep -q 'debian' /etc/os-release; then
-        CUSTOM_CONFIG+=(
+        SIGNING_REMOVAL=+(
             '--set-str CONFIG_SYSTEM_REVOCATION_KEYS'
         )
     elif grep -q 'fedora' /etc/os-release; then
-        CUSTOM_CONFIG+=(
+        SIGNING_REMOVAL=+(
             #'--disable CONFIG_MODULE_SIG'
             '--disable CONFIG_MODULE_SIG_ALL'
             '--set-str CONFIG_MODULE_SIG_KEY'
@@ -110,12 +108,12 @@ function modify_kernel_config() {
     # disable AEGIS-128 (ARM{,64} NEON})
     # https://github.com/NixOS/nixpkgs/issues/74744
     # plus, this kernel won't run in "prod", so this isn't even a "nice to have"
-    CUSTOM_CONFIG+=(
+    ARM_SIMD_DISABLE=(
         '--disable CONFIG_CRYPTO_AEGIS128_SIMD'
     )
 
     # debug options
-    CUSTOM_CONFIG+=(
+    DEBUG_CONFIG=(
         '--enable CONFIG_ARCH_WANT_FRAME_POINTERS'
         '--enable CONFIG_DEBUG_BUGVERBOSE'
         '--enable CONFIG_DEBUG_DRIVER'
@@ -144,14 +142,14 @@ function modify_kernel_config() {
         '--enable CONFIG_UBSAN'
     )
     if [[ "$(uname -m)" == 'x86_64' ]]; then
-        CUSTOM_CONFIG+=(
+        DEBUG_CONFIG=+(
             '--enable CONFIG_STACK_VALIDATION'
         )
     fi
 
     # sched_ext
     if [[ -n "${COMPILING_SCHED_EXT:-}" ]]; then
-        CUSTOM_CONFIG+=(
+        SCHED_EXT_CONFIG=(
             '--disable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT'
             '--enable CONFIG_DEBUG_INFO_DWARF5'
             '--enable CONFIG_PAHOLE_HAS_BTF_TAG'
@@ -162,7 +160,7 @@ function modify_kernel_config() {
     if [[ "${BUILD_WITH_RUST:-0}" == '1' ]] && [[ "${LLVM:-0}" == '1' ]]; then
         setup_rust_toolchain
         make rustavailable
-        CUSTOM_CONFIG+=(
+        RUST_CONFIG=(
             '--enable CONFIG_RUST'
             '--enable CONFIG_RUST_OVERFLOW_CHECKS'
             '--enable CONFIG_RUST_BUILD_ASSERT_ALLOW'
@@ -173,6 +171,16 @@ function modify_kernel_config() {
         echo 'WARNING: $BUILD_WITH_RUST or $LLVM is unset, not building with Rust'
     fi
 
+    CUSTOM_CONFIG=(
+        "${IK_CONFIG[@]}"
+        "${DEFCONFIG_ADD_ONS[@]}"
+        "${DEBRAND_CONFIG[@]}"
+        "${SIGNING_REMOVAL[@]}"
+        "${ARM_SIMD_DISABLE[@]}"
+        "${RUST_CONFIG[@]}"
+        "${DEBUG_CONFIG[@]}"
+        "${SCHED_EXT_CONFIG[@]}"
+    )
     kconfigure "${CUSTOM_CONFIG[@]}"
 }
 
