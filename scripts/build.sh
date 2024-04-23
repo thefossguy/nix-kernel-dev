@@ -30,10 +30,10 @@ MAX_PARALLEL_JOBS="-j${MAX_PARALLEL_JOBS:-$(( $(nproc) + 2 ))}"
 SUDO_ALIAS='sudo --preserve-env=PATH env' # use this alias for su-do-ing binaries provided by Nix
 REMOVE_KERNEL="${REMOVE_KERNEL:-}"
 
-if [ "${BUILD_RPM_DEVEL:-0}" -eq 0 ]; then
-    KBUILD_RPROMPTS='--without devel'
-else
+if [ "${BUILD_RPM_DEVEL:-0}" -eq 1 ]; then
     KBUILD_RPROMPTS=''
+else
+    KBUILD_RPROMPTS='--without devel'
 fi
 
 export BUILD_ARCH CLEAN_BUILD KERNEL_CONFIG KERNEL_LOCALVERSION BUILD_WITH_RUST KBUILD_RPROMPTS INSTALL_ZE_KERNEL FORCE_INSTALL_ZE_KERNEL MAX_PARALLEL_JOBS SUDO_ALIAS REMOVE_KERNEL
