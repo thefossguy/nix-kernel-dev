@@ -146,6 +146,7 @@ function modify_kernel_config() {
         '--enable CONFIG_DEBUG_FS'
         '--enable CONFIG_DEBUG_FS_ALLOW_ALL'
         '--enable CONFIG_DEBUG_INFO'
+        '--enable CONFIG_DEBUG_INFO_SPLIT'
         '--enable CONFIG_DEBUG_KERNEL'
         '--enable CONFIG_DEBUG_MISC'
         '--enable CONFIG_DYNAMIC_DEBUG'
