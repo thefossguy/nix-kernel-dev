@@ -149,8 +149,6 @@ function modify_kernel_config() {
         '--enable CONFIG_DEBUG_INFO_SPLIT'
         '--enable CONFIG_DEBUG_KERNEL'
         '--enable CONFIG_DEBUG_MISC'
-        '--enable CONFIG_DYNAMIC_DEBUG'
-        '--enable CONFIG_DYNAMIC_DEBUG_CORE'
         '--enable CONFIG_FRAME_POINTER'
         '--enable CONFIG_GDB_SCRIPTS'
         '--enable CONFIG_KALLSYMS'
