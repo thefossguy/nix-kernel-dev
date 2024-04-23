@@ -64,101 +64,116 @@ function setup_rust_toolchain() {
     export RUST_LIB_SRC="$(rustc --print sysroot)/lib/rustlib/src/rust/library"
 }
 
-function enable_rust_config() {
-    if [[ "${BUILD_WITH_RUST}" == '1' ]] && [[ "${LLVM:-0}" == '1' ]]; then
+function modify_kernel_config() {
+    # start with a "useful" base config
+    make olddefconfig
+    CUSTOM_CONFIG=()
+
+    # built-in kernel config+headers
+    CUSTOM_CONFIG+=(
+        '--enable CONFIG_IKCONFIG'
+        '--enable CONFIG_IKCONFIG_PROC'
+        '--enable CONFIG_IKHEADERS'
+    )
+
+    # defconfig does not enable these
+    CUSTOM_CONFIG+=(
+        '--module CONFIG_XFS_FS'
+        '--module CONFIG_ZRAM'
+    )
+
+    # "de-branding" and "re-branding"
+    CUSTOM_CONFIG+=(
+        '--disable CONFIG_LOCALVERSION_AUTO'
+        '--set-str CONFIG_BUILD_SALT'
+        "--set-str CONFIG_LOCALVERSION ${KERNEL_LOCALVERSION}"
+    )
+
+    # no need to have these keys, not a prod kernel
+    CUSTOM_CONFIG+=(
+        '--disable CONFIG_SYSTEM_REVOCATION_LIST'
+        '--set-str CONFIG_SYSTEM_TRUSTED_KEYS'
+    )
+
+    if grep -q 'debian' /etc/os-release; then
+        CUSTOM_CONFIG+=(
+            '--set-str CONFIG_SYSTEM_REVOCATION_KEYS'
+        )
+    elif grep -q 'fedora' /etc/os-release; then
+        CUSTOM_CONFIG+=(
+            #'--disable CONFIG_MODULE_SIG'
+            '--disable CONFIG_MODULE_SIG_ALL'
+            '--set-str CONFIG_MODULE_SIG_KEY'
+        )
+    fi
+
+    # disable AEGIS-128 (ARM{,64} NEON})
+    # https://github.com/NixOS/nixpkgs/issues/74744
+    # plus, this kernel won't run in "prod", so this isn't even a "nice to have"
+    CUSTOM_CONFIG+=(
+        '--disable CONFIG_CRYPTO_AEGIS128_SIMD'
+    )
+
+    # debug options
+    CUSTOM_CONFIG+=(
+        '--enable CONFIG_ARCH_WANT_FRAME_POINTERS'
+        '--enable CONFIG_DEBUG_BUGVERBOSE'
+        '--enable CONFIG_DEBUG_DRIVER'
+        '--enable CONFIG_DEBUG_FS'
+        '--enable CONFIG_DEBUG_FS_ALLOW_ALL'
+        '--enable CONFIG_DEBUG_INFO'
+        '--enable CONFIG_DEBUG_KERNEL'
+        '--enable CONFIG_DEBUG_MISC'
+        '--enable CONFIG_DYNAMIC_DEBUG'
+        '--enable CONFIG_DYNAMIC_DEBUG_CORE'
+        '--enable CONFIG_FRAME_POINTER'
+        '--enable CONFIG_GDB_SCRIPTS'
+        '--enable CONFIG_KALLSYMS'
+        '--enable CONFIG_KASAN'
+        '--enable CONFIG_KGDB'
+        '--enable CONFIG_KGDB_KDB'
+        '--enable CONFIG_KGDB_SERIAL_CONSOLE'
+        '--enable CONFIG_KASAN'
+        '--enable CONFIG_LOCK_TORTURE_TEST'
+        '--enable CONFIG_LOCKDEP'
+        '--enable CONFIG_LOCKUP_DETECTOR'
+        '--enable CONFIG_PRINTK_CALLER'
+        '--enable CONFIG_PRINTK_TIME'
+        '--enable CONFIG_PROVE_LOCKING'
+        '--enable CONFIG_STRICT_KERNEL_RWX'
+        '--enable CONFIG_UBSAN'
+    )
+    if [[ "$(uname -m)" == 'x86_64' ]]; then
+        CUSTOM_CONFIG+=(
+            '--enable CONFIG_STACK_VALIDATION'
+        )
+    fi
+
+    # sched_ext
+    if [[ -n "${COMPILING_SCHED_EXT:-}" ]]; then
+        CUSTOM_CONFIG+=(
+            '--disable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT'
+            '--enable CONFIG_DEBUG_INFO_DWARF5'
+            '--enable CONFIG_PAHOLE_HAS_BTF_TAG'
+            '--enable CONFIG_SCHED_CLASS_EXT'
+        )
+    fi
+
+    if [[ "${BUILD_WITH_RUST:-0}" == '1' ]] && [[ "${LLVM:-0}" == '1' ]]; then
         setup_rust_toolchain
-
         make rustavailable
-        make rust.config
-
-        ./scripts/config --enable CONFIG_RUST
-        ./scripts/config --enable CONFIG_RUST_OVERFLOW_CHECKS
-        ./scripts/config --enable CONFIG_RUST_BUILD_ASSERT_ALLOW
-
-        if ! grep -q 'CONFIG_RUST=y' .config && ! grep -q 'CONFIG_RUST_OVERFLOW_CHECKS=y' .config; then
-            echo 'ERROR: building with Rust does not seem to be possible'
-            exit 4
-        fi
+        CUSTOM_CONFIG+=(
+            '--enable CONFIG_RUST'
+            '--enable CONFIG_RUST_OVERFLOW_CHECKS'
+            '--enable CONFIG_RUST_BUILD_ASSERT_ALLOW'
+        )
 
     else
         # shellcheck disable=SC2016
         echo 'WARNING: $BUILD_WITH_RUST or $LLVM is unset, not building with Rust'
     fi
-}
 
-function modify_kernel_config() {
-    # start with a "useful" base config
-    make olddefconfig
-
-    # built-in kernel config+headers
-    ./scripts/config --enable CONFIG_IKCONFIG
-    ./scripts/config --enable CONFIG_IKCONFIG_PROC
-    ./scripts/config --enable CONFIG_IKHEADERS
-
-    # defconfig does not enable these
-    ./scripts/config --module CONFIG_XFS_FS
-    ./scripts/config --module CONFIG_ZRAM
-
-    # "de-branding" and "re-branding"
-    ./scripts/config --disable CONFIG_LOCALVERSION_AUTO
-    ./scripts/config --set-str CONFIG_BUILD_SALT ''
-    ./scripts/config --set-str CONFIG_LOCALVERSION "${KERNEL_LOCALVERSION}"
-
-    # no need to have these keys, not a prod kernel
-    ./scripts/config --disable CONFIG_MODULE_SIG
-    ./scripts/config --disable CONFIG_MODULE_SIG_ALL
-    ./scripts/config --set-str CONFIG_MODULE_SIG_KEY ''
-    ./scripts/config --set-str CONFIG_SYSTEM_REVOCATION_KEYS ''
-    ./scripts/config --set-str CONFIG_SYSTEM_TRUSTED_KEYS ''
-
-    # disable AEGIS-128 (ARM{,64} NEON})
-    # https://github.com/NixOS/nixpkgs/issues/74744
-    # plus, this kernel won't run in "prod", so this isn't even a "nice to have"
-    ./scripts/config --disable CONFIG_CRYPTO_AEGIS128_SIMD
-
-    # debug options
-    ./scripts/config --enable CONFIG_ARCH_WANT_FRAME_POINTERS
-    ./scripts/config --enable CONFIG_DEBUG
-    ./scripts/config --enable CONFIG_DEBUG_BUGVERBOSE
-    ./scripts/config --enable CONFIG_DEBUG_DRIVER
-    ./scripts/config --enable CONFIG_DEBUG_FS
-    ./scripts/config --enable CONFIG_DEBUG_FS_ALLOW_ALL
-    ./scripts/config --enable CONFIG_DEBUG_INFO
-    ./scripts/config --enable CONFIG_DEBUG_KERNEL
-    ./scripts/config --enable CONFIG_DEBUG_MISC
-    ./scripts/config --enable CONFIG_DYNAMIC_DEBUG
-    ./scripts/config --enable CONFIG_DYNAMIC_DEBUG_CORE
-    ./scripts/config --enable CONFIG_FRAME_POINTER
-    ./scripts/config --enable CONFIG_GDB_SCRIPTS
-    ./scripts/config --enable CONFIG_KALLSYMS
-    ./scripts/config --enable CONFIG_KASAN
-    ./scripts/config --enable CONFIG_KGDB
-    ./scripts/config --enable CONFIG_KGDB_KDB
-    ./scripts/config --enable CONFIG_KGDB_SERIAL_CONSOLE
-    ./scripts/config --enable CONFIG_KMSAN
-    ./scripts/config --enable CONFIG_LOCK_TORTURE_TEST
-    ./scripts/config --enable CONFIG_LOCKDEP
-    ./scripts/config --enable CONFIG_LOCKUP_DETECTOR
-    ./scripts/config --enable CONFIG_PRINTK_CALLER
-    ./scripts/config --enable CONFIG_PRINTK_TIME
-    ./scripts/config --enable CONFIG_PROVE_LOCKING
-    ./scripts/config --enable CONFIG_STACK_VALIDATION
-    ./scripts/config --enable CONFIG_STRICT_KERNEL_RWS
-    ./scripts/config --enable CONFIG_UBSAN
-
-    # sched_ext
-    if [[ -n "${COMPILING_SCHED_EXT:-}" ]]; then
-        ./scripts/config --disable CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT
-        ./scripts/config --enable CONFIG_DEBUG_INFO_DWARF5
-        ./scripts/config --enable CONFIG_PAHOLE_HAS_BTF_TAG
-        ./scripts/config --enable CONFIG_SCHED_CLASS_EXT
-    fi
-
-    # enable Rust, conditionally
-    enable_rust_config
-
-    # final config rebuild before kernel build
-    make olddefconfig
+    kconfigure "${CUSTOM_CONFIG[@]}"
 }
 
 function configure_kernel() {
