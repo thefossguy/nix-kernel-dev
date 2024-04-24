@@ -201,7 +201,7 @@ function configure_kernel() {
     if [[ "${CLEAN_BUILD}" == '1' ]]; then
         rm -vf .config*
         if [[ "$(git rev-parse --is-inside-work-tree)" == 'true' ]]; then
-            git clean -x -d -f
+            git clean --exclude='build-*.log' -x -d -f
         fi
         $SUDO_ALIAS make distclean
     fi
