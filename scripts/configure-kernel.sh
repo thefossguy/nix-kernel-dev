@@ -114,6 +114,7 @@ function modify_kernel_config() {
 
     if grep -q 'fedora' /etc/os-release; then
         SELINUX_CONFIG=(
+            '--enable CONFIG_SECURITY_NETWORK'
             '--enable CONFIG_SECURITY_SELINUX'
             '--enable CONFIG_DEFAULT_SECURITY_SELINUX'
         )
@@ -133,6 +134,7 @@ function modify_kernel_config() {
     else
         # shellcheck disable=SC2016
         echo 'WARNING: $BUILD_WITH_RUST or $LLVM is unset, not building with Rust'
+        RUST_CONFIG=()
     fi
 
     # sched_ext
@@ -160,6 +162,7 @@ function modify_kernel_config() {
         '--enable CONFIG_DEBUG_MISC'
         '--enable CONFIG_FRAME_POINTER'
         '--enable CONFIG_GDB_SCRIPTS'
+        '--enable CONFIG_HARDLOCKUP_DETECTOR'
         '--enable CONFIG_KALLSYMS'
         '--enable CONFIG_KASAN'
         '--enable CONFIG_KGDB'
